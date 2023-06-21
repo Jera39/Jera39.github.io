@@ -5,19 +5,37 @@ $telefono = $_POST['phone'];
 $asunto = $_POST['affair'];
 $mensaje = $_POST['message'];
 
-$fechaHora = date('Y-m-d H:i:s');
+// Datos de conexión a la base de datos
+$host = 'localhost';
+$usuario = 'root';
+$contrasena = '';
+$dbname = 'phpdb';
 
-$datos =  "Fecha y Hora:       " . $fechaHora . "\r\n";
-$datos .= "Nombre:             " . $nombre . "\r\n";
-$datos .= "Correo Electrónico: " . $email . "\r\n";
-$datos .= "Número Celular:     " . $telefono . "\r\n";
-$datos .= "Asunto:             " . $asunto . "\r\n" ;
-$datos .= "Mensaje:            " . $mensaje . "\r\n";
-$datos .= "________________________________________________________________________________________________\r\n";
-$datos .= "\r\n";
+try {
+    // Conexión a la base de datos
+    $conexion = new PDO("mysql:host=$host;dbname=$dbname", $usuario, $contrasena);
+    echo "Se conectó correctamente a la base de datos";
 
-file_put_contents("datos.txt", $datos, FILE_APPEND);
-
-header('Location:FORM.HTML')
-
+    // Consulta SQL para insertar los datos en la tabla
+    $sql = "INSERT INTO consultas (nombre, email, telefono, asunto, mensaje, fecha) VALUES (:nombre, :email, :telefono, :asunto, :mensaje, current_timestamp())";
+    
+    // Preparar la consulta
+    $stmt = $conexion->prepare($sql);
+    
+    // Asignar los valores a los parámetros de la consulta
+    $stmt->bindParam(':nombre', $nombre);
+    $stmt->bindParam(':email', $email);
+    $stmt->bindParam(':telefono', $telefono);
+    $stmt->bindParam(':asunto', $asunto);
+    $stmt->bindParam(':mensaje', $mensaje);
+    
+    // Ejecutar la consulta
+    $stmt->execute();
+    
+    // Redireccionar a la página después de guardar los datos
+    header('Location: FORM.HTML');
+    
+} catch (PDOException $exp) {
+    echo "No se logró conectar correctamente con la base de datos: $dbname, error: $exp";
+}
 ?>
